@@ -1,5 +1,6 @@
 package com.pkstudio.pressureulceralarm;
 
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -8,6 +9,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,7 +21,8 @@ public class MainActivity extends AppCompatActivity {
     SensorManager sensorManager;
     Sensor rotationVector;
 
-
+    float[] prevOrientations = new float[3];
+    float threshold = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startSensor(){
         rotationVector = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        Arrays.fill(prevOrientations,0f);
         SensorEventListener listener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
@@ -92,5 +97,27 @@ public class MainActivity extends AppCompatActivity {
             orientations[i] = (float)(Math.toDegrees(orientations[i]));
         }
         output.setText("X: " + Math.floor(orientations[0]) + " Y: " + Math.floor(orientations[1]) + " Z: " + Math.floor(orientations[2]));
+        //for test orientation change
+        /*if(isOrientationChanged(orientations)){
+            getWindow().getDecorView().setBackgroundColor(Color.RED);
+
+        }else{
+            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
+        }*/
+        if(isOrientationChanged(orientations)){
+            //Do something if there is orientation changing
+
+        }
+        prevOrientations = orientations;
+    }
+
+    private boolean isOrientationChanged(float[] orientations){
+        boolean isChanged = false;
+        for(int i = 0; i < 3; i++){
+            if(Math.abs(orientations[i] - prevOrientations[i]) >= threshold){
+                isChanged = true;
+            }
+        }
+        return isChanged;
     }
 }
