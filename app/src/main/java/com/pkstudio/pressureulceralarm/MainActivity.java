@@ -18,6 +18,8 @@ public class MainActivity extends AppCompatActivity {
     SensorManager sensorManager;
     Sensor rotationVector;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 //read sensor data here
+                updateSensorValue(event);
             }
 
             @Override
@@ -69,5 +72,25 @@ public class MainActivity extends AppCompatActivity {
         };
 
         sensorManager.registerListener(listener,rotationVector, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private void updateSensorValue(SensorEvent event){
+        float[] rotationMatrix = new float[16];
+        SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values);
+        // Remap coordinate system
+        float[] remappedRotationMatrix = new float[16];
+        SensorManager.remapCoordinateSystem(rotationMatrix,
+                SensorManager.AXIS_X,
+                SensorManager.AXIS_Z,
+                remappedRotationMatrix);
+
+        // Convert to orientations
+        float[] orientations = new float[3];
+        SensorManager.getOrientation(remappedRotationMatrix,orientations);
+        // Convert to angle
+        for(int i = 0; i < 3; i++) {
+            orientations[i] = (float)(Math.toDegrees(orientations[i]));
+        }
+        output.setText("X: " + Math.floor(orientations[0]) + " Y: " + Math.floor(orientations[1]) + " Z: " + Math.floor(orientations[2]));
     }
 }
