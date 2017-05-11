@@ -19,5 +19,6 @@
     </application>
 
     <uses-feature android:name="android.hardware.Sensor" android:required="true" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
 </manifest>

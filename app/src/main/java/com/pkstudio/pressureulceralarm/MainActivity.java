@@ -5,8 +5,15 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,15 +21,30 @@ import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
+    //UI part
     TextView gyroStatus;
     TextView accelStatus;
     TextView output;
 
+    TextView timeLeft;
+    Button timerButton;
+
+    //Sensor part
     SensorManager sensorManager;
     Sensor rotationVector;
 
+    //Timer part
+    CountDownTimer timer;
+    Uri alarm;
+    Ringtone r;
+    Vibrator vibrator;
+
+    //Logic part
     float[] prevOrientations = new float[3];
-    float threshold = 10;
+
+    //Preference part
+    static float threshold = 10;
+    static long timeToAlert = 10 ; //time in second
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +55,21 @@ public class MainActivity extends AppCompatActivity {
         accelStatus = (TextView) findViewById(R.id.AccelStatus);
         output = (TextView) findViewById(R.id.Output);
 
+        timeLeft = (TextView) findViewById(R.id.TimeLeft);
+        timerButton = (Button) findViewById(R.id.TimerButton);
+
+        alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        if(alarm == null){
+
+            alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+            if(alarm == null) {
+                alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+            }
+        }
+        r = RingtoneManager.getRingtone(getApplicationContext(),alarm);
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         if(sensorManager == null){
@@ -40,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
         }else{
             checkSensor();
             startSensor();
+            resetTimer();
         }
     }
 
@@ -119,5 +157,49 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return isChanged;
+    }
+
+    public void toggleTimer(View view){
+
+        if(timerButton.getText().toString().equalsIgnoreCase("Start")){
+            //for test
+            Toast.makeText(MainActivity.this, "Service started", Toast.LENGTH_LONG).show();
+
+            timer = new CountDownTimer(timeToAlert * 1000, 1) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    long secsUntilFinished = millisUntilFinished/1000 + 1;
+                    timeLeft.setText("" + String.format("%02d",secsUntilFinished/60) + ":" + String.format("%02d",secsUntilFinished%60));
+                }
+
+                @Override
+                public void onFinish() {
+                    alert();
+                    Toast.makeText(MainActivity.this, "Finished", Toast.LENGTH_LONG).show();
+                }
+            }.start();
+
+            timerButton.setText("Stop");
+        }else{
+            //for test
+            Toast.makeText(MainActivity.this, "Service stopped", Toast.LENGTH_LONG).show();
+
+            timer.cancel();
+            resetTimer();
+        }
+    }
+
+    private void resetTimer(){
+        if(r.isPlaying()){
+            r.stop();
+            vibrator.cancel();
+        }
+        timeLeft.setText("" + String.format("%02d",timeToAlert/60) + ":" + String.format("%02d",timeToAlert%60));
+        timerButton.setText("Start");
+    }
+
+    private void alert(){
+        r.play();
+        vibrator.vibrate(10 * 1000);
     }
 }
