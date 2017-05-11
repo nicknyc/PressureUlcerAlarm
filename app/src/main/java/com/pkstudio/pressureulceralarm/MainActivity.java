@@ -1,6 +1,5 @@
 package com.pkstudio.pressureulceralarm;
 
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -41,16 +40,31 @@ public class MainActivity extends AppCompatActivity {
 
     //Logic part
     float[] prevOrientations = new float[3];
+    boolean isTimerOn = false;
 
     //Preference part
     static float threshold = 10;
-    static long timeToAlert = 10 ; //time in second
+    static long timeToAlert = 10 * 60; //time in second
+    static boolean allowAlertSound = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        init();
+
+        if(sensorManager == null){
+            finish();
+        }else{
+            checkSensor();
+            startSensor();
+            stopTimer();
+        }
+    }
+
+    private void init(){
+        //UI part
         gyroStatus = (TextView) findViewById(R.id.GyroStatus);
         accelStatus = (TextView) findViewById(R.id.AccelStatus);
         output = (TextView) findViewById(R.id.Output);
@@ -58,6 +72,10 @@ public class MainActivity extends AppCompatActivity {
         timeLeft = (TextView) findViewById(R.id.TimeLeft);
         timerButton = (Button) findViewById(R.id.TimerButton);
 
+        //Sensor part
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+
+        //Timer part
         alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
         if(alarm == null){
 
@@ -70,17 +88,9 @@ public class MainActivity extends AppCompatActivity {
         r = RingtoneManager.getRingtone(getApplicationContext(),alarm);
         vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
 
-        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-
-        if(sensorManager == null){
-            finish();
-        }else{
-            checkSensor();
-            startSensor();
-            resetTimer();
-        }
     }
 
+    //Sensor part
     private void checkSensor(){
         Sensor gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         Sensor acceleroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -135,16 +145,10 @@ public class MainActivity extends AppCompatActivity {
             orientations[i] = (float)(Math.toDegrees(orientations[i]));
         }
         output.setText("X: " + Math.floor(orientations[0]) + " Y: " + Math.floor(orientations[1]) + " Z: " + Math.floor(orientations[2]));
-        //for test orientation change
-        /*if(isOrientationChanged(orientations)){
-            getWindow().getDecorView().setBackgroundColor(Color.RED);
-
-        }else{
-            getWindow().getDecorView().setBackgroundColor(Color.WHITE);
-        }*/
         if(isOrientationChanged(orientations)){
-            //Do something if there is orientation changing
-
+            if(isTimerOn){
+                resetTimer();
+            }
         }
         prevOrientations = orientations;
     }
@@ -159,47 +163,61 @@ public class MainActivity extends AppCompatActivity {
         return isChanged;
     }
 
+    //Timer part
     public void toggleTimer(View view){
 
-        if(timerButton.getText().toString().equalsIgnoreCase("Start")){
-            //for test
+        if(isTimerOn == false){
+            startTimer();
+            isTimerOn = true;
             Toast.makeText(MainActivity.this, "Service started", Toast.LENGTH_LONG).show();
-
-            timer = new CountDownTimer(timeToAlert * 1000, 1) {
-                @Override
-                public void onTick(long millisUntilFinished) {
-                    long secsUntilFinished = millisUntilFinished/1000 + 1;
-                    timeLeft.setText("" + String.format("%02d",secsUntilFinished/60) + ":" + String.format("%02d",secsUntilFinished%60));
-                }
-
-                @Override
-                public void onFinish() {
-                    alert();
-                    Toast.makeText(MainActivity.this, "Finished", Toast.LENGTH_LONG).show();
-                }
-            }.start();
-
-            timerButton.setText("Stop");
         }else{
-            //for test
+            stopTimer();
+            isTimerOn = false;
             Toast.makeText(MainActivity.this, "Service stopped", Toast.LENGTH_LONG).show();
-
-            timer.cancel();
-            resetTimer();
         }
     }
 
-    private void resetTimer(){
+    private void stopTimer(){
         if(r.isPlaying()){
             r.stop();
-            vibrator.cancel();
+        }
+        vibrator.cancel();
+        if(isTimerOn){
+            timer.cancel();
         }
         timeLeft.setText("" + String.format("%02d",timeToAlert/60) + ":" + String.format("%02d",timeToAlert%60));
         timerButton.setText("Start");
     }
 
+    private void startTimer(){
+        timer = new CountDownTimer(timeToAlert * 1000, 1) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                long secsUntilFinished = millisUntilFinished/1000 + 1;
+                timeLeft.setText("" + String.format("%02d",secsUntilFinished/60) + ":" + String.format("%02d",secsUntilFinished%60));
+            }
+
+            @Override
+            public void onFinish() {
+                timeLeft.setText("" + String.format("%02d",0) + ":" + String.format("%02d",0));
+                alert();
+                Toast.makeText(MainActivity.this, "Finished", Toast.LENGTH_LONG).show();
+            }
+        }.start();
+
+        timerButton.setText("Stop");
+    }
+
+    private void resetTimer(){
+        stopTimer();
+        startTimer();
+        //Toast.makeText(MainActivity.this, "Resetted", Toast.LENGTH_LONG).show();
+    }
+
     private void alert(){
-        r.play();
+        if(allowAlertSound) {
+            r.play();
+        }
         vibrator.vibrate(10 * 1000);
     }
 }
