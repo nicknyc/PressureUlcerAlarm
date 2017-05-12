@@ -1,5 +1,7 @@
 package com.pkstudio.pressureulceralarm;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -9,14 +11,21 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.Vibrator;
+import android.preference.PreferenceManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Arrays;
+import java.util.prefs.Preferences;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -43,9 +52,11 @@ public class MainActivity extends AppCompatActivity {
     boolean isTimerOn = false;
 
     //Preference part
-    static float threshold = 10;
-    static long timeToAlert = 10 * 60; //time in second
-    static boolean allowAlertSound = true;
+    static SharedPreferences sharedPreferences;
+    static float threshold;
+    static long timeToAlert; //time in second
+    static boolean allowAlertSound;
+    static boolean allowVibrate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +74,33 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mainbar, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.settingButton:
+                showSetting();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void init(){
+        //Preference part
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        threshold = Float.parseFloat(sharedPreferences.getString("threshold","10"));
+        timeToAlert = Long.parseLong(sharedPreferences.getString("timeToAlert","10")) * 60;
+        allowAlertSound = sharedPreferences.getBoolean("allowAlertSound", true);
+        allowVibrate = sharedPreferences.getBoolean("allowVibrate",true);
+
         //UI part
         gyroStatus = (TextView) findViewById(R.id.GyroStatus);
         accelStatus = (TextView) findViewById(R.id.AccelStatus);
@@ -219,5 +256,10 @@ public class MainActivity extends AppCompatActivity {
             r.play();
         }
         vibrator.vibrate(10 * 1000);
+    }
+
+    private void showSetting(){
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
     }
 }
