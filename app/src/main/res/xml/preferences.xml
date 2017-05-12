@@ -32,4 +32,11 @@
             android:ringtoneType="alarm"
             android:title="Ringtone" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="Developer options">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="showData"
+            android:title="Show sensor data " />
+    </PreferenceCategory>
+
 </PreferenceScreen>

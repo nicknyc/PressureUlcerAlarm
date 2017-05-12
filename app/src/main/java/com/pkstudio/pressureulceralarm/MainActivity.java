@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     static long timeToAlert; //time in second
     static boolean allowAlertSound;
     static boolean allowVibrate;
+    static boolean showData;
     static String ringtonePreference;
 
     @Override
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         allowAlertSound = sharedPreferences.getBoolean("allowAlertSound", true);
         allowVibrate = sharedPreferences.getBoolean("allowVibrate",true);
         ringtonePreference = sharedPreferences.getString("userRingtone","DEFAULT_ALARM_ALERT_URI");
+        showData = sharedPreferences.getBoolean("showData", false);
 
         //UI part
         gyroStatus = (TextView) findViewById(R.id.GyroStatus);
@@ -133,18 +135,24 @@ public class MainActivity extends AppCompatActivity {
     private void checkSensor(){
         Sensor gyroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         Sensor acceleroSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-        if(gyroSensor == null){
-            Toast.makeText(MainActivity.this, "Gyroscope is not detected.", Toast.LENGTH_LONG).show();
-            gyroStatus.setTextColor(getResources().getColor(R.color.colorError));
+        if(showData) {
+            gyroStatus.setText("Gyroscope");
+            accelStatus.setText("Accelerometer");
+            if (gyroSensor == null) {
+                Toast.makeText(MainActivity.this, "Gyroscope is not detected.", Toast.LENGTH_LONG).show();
+                gyroStatus.setTextColor(getResources().getColor(R.color.colorError));
+            } else {
+                gyroStatus.setTextColor(getResources().getColor(R.color.colorValid));
+            }
+            if (acceleroSensor == null) {
+                Toast.makeText(MainActivity.this, "Accelerometer is not detected.", Toast.LENGTH_LONG).show();
+                accelStatus.setTextColor(getResources().getColor(R.color.colorError));
+            } else {
+                accelStatus.setTextColor(getResources().getColor(R.color.colorValid));
+            }
         }else{
-            gyroStatus.setTextColor(getResources().getColor(R.color.colorValid));
-        }
-        if(acceleroSensor == null){
-            Toast.makeText(MainActivity.this, "Accelerometer is not detected.", Toast.LENGTH_LONG).show();
-            accelStatus.setTextColor(getResources().getColor(R.color.colorError));
-        }else{
-            accelStatus.setTextColor(getResources().getColor(R.color.colorValid));
+            gyroStatus.setText("");
+            accelStatus.setText("");
         }
     }
 
@@ -183,7 +191,11 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < 3; i++) {
             orientations[i] = (float)(Math.toDegrees(orientations[i]));
         }
-        output.setText("X: " + Math.floor(orientations[0]) + " Y: " + Math.floor(orientations[1]) + " Z: " + Math.floor(orientations[2]));
+        if(showData) {
+            output.setText("X: " + Math.floor(orientations[0]) + " Y: " + Math.floor(orientations[1]) + " Z: " + Math.floor(orientations[2]));
+        }else{
+            output.setText("");
+        }
         if(isOrientationChanged(orientations)){
             if(isTimerOn){
                 resetTimer();
