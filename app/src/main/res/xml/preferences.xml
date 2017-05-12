@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="General">
+
+        <EditTextPreference
+            android:defaultValue="10"
+            android:key="threshold"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Threshold angle" />
+        <EditTextPreference
+            android:defaultValue="10"
+            android:key="timeToAlert"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Set Time" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Alarm">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="allowAlertSound"
+            android:title="Sound" />
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="allowVibrate"
+            android:title="Vibrate" />
+        <RingtonePreference
+            android:defaultValue=""
+            android:key="userRingtone"
+            android:ringtoneType="alarm"
+            android:title="Ringtone" />
+    </PreferenceCategory>
+</PreferenceScreen>
