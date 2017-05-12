@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
     static long timeToAlert; //time in second
     static boolean allowAlertSound;
     static boolean allowVibrate;
+    static String ringtonePreference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         timeToAlert = Long.parseLong(sharedPreferences.getString("timeToAlert","10")) * 60;
         allowAlertSound = sharedPreferences.getBoolean("allowAlertSound", true);
         allowVibrate = sharedPreferences.getBoolean("allowVibrate",true);
+        ringtonePreference = sharedPreferences.getString("userRingtone","DEFAULT_ALARM_ALERT_URI");
 
         //UI part
         gyroStatus = (TextView) findViewById(R.id.GyroStatus);
@@ -113,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         //Timer part
-        alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        alarm = Uri.parse(ringtonePreference);
         if(alarm == null){
 
             alarm = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -255,7 +257,9 @@ public class MainActivity extends AppCompatActivity {
         if(allowAlertSound) {
             r.play();
         }
-        vibrator.vibrate(10 * 1000);
+        if(allowVibrate) {
+            vibrator.vibrate(10 * 1000);
+        }
     }
 
     private void showSetting(){
