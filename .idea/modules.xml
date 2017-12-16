@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PressureUlcerAlarm.iml" filepath="$PROJECT_DIR$/PressureUlcerAlarm.iml" />
+      <module fileurl="file://C:\Users\PK\Android Studio Project\PressureUlcerAlarm\PressureUlcerAlarm.iml" filepath="C:\Users\PK\Android Studio Project\PressureUlcerAlarm\PressureUlcerAlarm.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\PK\Android Studio Project\PressureUlcerAlarm\app\app.iml" filepath="C:\Users\PK\Android Studio Project\PressureUlcerAlarm\app\app.iml" />
     </modules>
   </component>
 </project>
